@@ -1,103 +1,96 @@
-import { HALF_TABLE_HEIGHT, HALF_TABLE_WIDTH } from "./constants";
-import { Vector } from "./vector";
+import {
+  BALL_RADIUS,
+  GAME_TABLE_LOWER_BOUND,
+  GAME_TABLE_UPPER_BOUND,
+  HALF_TABLE_WIDTH,
+} from './constants';
+import { Vector } from './vector';
+
+const MIN_LINE_WIDTH = 0.4;
 
 export class Renderer {
-  private canvas: HTMLCanvasElement;
-  private ctx: CanvasRenderingContext2D;
-  private currentImageData: ImageData;
+  private static trainerCanvas: HTMLCanvasElement;
+  private static ctx: CanvasRenderingContext2D;
 
-  get width() {
-    return this.canvas.width;
+  static get width() {
+    return Renderer.trainerCanvas.width;
   }
-  get height() {
-    return this.canvas.height;
-  }
-
-  constructor(width: number, height: number) {
-    this.canvas = document.querySelector("canvas");
-    this.ctx = this.canvas.getContext("2d");
-
-    this.canvas.width = width;
-    this.canvas.height = height;
+  static get height() {
+    return Renderer.trainerCanvas.height;
   }
 
-  drawVideoFrame(
-    video: HTMLVideoElement,
-    sx: number,
-    sy: number,
-    sw: number,
-    sh: number
-  ) {
-    this.ctx.filter = "grayscale(1)";
-    this.ctx.drawImage(video, sx, sy, sw, sh, 0, 0, this.width, this.height);
-    this.ctx.filter = "none";
+  static init(parent: HTMLElement, width: number, height: number) {
+    Renderer.trainerCanvas = parent.ownerDocument.createElement('canvas');
 
-    this.currentImageData = this.ctx.getImageData(
-      0,
-      0,
-      this.width,
-      this.height
-    );
+    Renderer.trainerCanvas.width = width;
+    Renderer.trainerCanvas.height = height;
+
+    Renderer.trainerCanvas.style.position = 'absolute';
+    Renderer.trainerCanvas.style.top = '0';
+    Renderer.trainerCanvas.style.left = '0';
+
+    Renderer.trainerCanvas.style.pointerEvents = 'none';
+
+    parent.appendChild(Renderer.trainerCanvas);
+
+    Renderer.ctx = Renderer.trainerCanvas.getContext('2d');
   }
 
-  drawCircle(center: Vector, radius: number, fill = false) {
-    this.ctx.beginPath();
-    this.ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
-    this.setStyle();
-
-    if (fill) {
-      this.ctx.fill();
-    } else {
-      this.ctx.stroke();
-    }
+  static clear() {
+    Renderer.ctx.clearRect(0, 0, Renderer.width, Renderer.height);
   }
 
-  drawPixel(position: Vector) {
-    this.setStyle;
-    this.ctx.fillRect(position.x, position.y, 1, 1);
+  static drawCircle(center: Vector, radius: number) {
+    Renderer.ctx.beginPath();
+
+    const worldPos = Renderer.getBallPosition(center);
+    const worldRadius = Renderer.scaleNumber(radius);
+    Renderer.ctx.arc(worldPos.x, worldPos.y, worldRadius, 0, Math.PI * 2);
+
+    Renderer.stroke();
   }
 
-  drawLine(from: Vector, to: Vector, width = 1) {
-    this.ctx.beginPath();
+  static drawLine(from: Vector, to: Vector, width = 1) {
+    Renderer.ctx.beginPath();
 
-    this.ctx.moveTo(from.x, from.y);
-    this.ctx.lineTo(to.x, to.y);
+    const fromWorldPos = Renderer.getBallPosition(from);
+    const toWorldPos = Renderer.getBallPosition(to);
+    Renderer.ctx.moveTo(fromWorldPos.x, fromWorldPos.y);
+    Renderer.ctx.lineTo(toWorldPos.x, toWorldPos.y);
 
-    this.setStyle(width);
-    this.ctx.stroke();
+    Renderer.stroke(width);
   }
 
-  getPixelColor(x: number, y: number) {
-    return this.currentImageData.data[
-      Math.round(y) * this.currentImageData.width * 4 + Math.round(x) * 4
-    ];
-  }
+  private static getBallPosition(physicsPosition: Vector) {
+    const normHeight = GAME_TABLE_UPPER_BOUND - GAME_TABLE_LOWER_BOUND;
+    const ratio = Renderer.width / Renderer.height;
+    const yOffset = (GAME_TABLE_UPPER_BOUND + GAME_TABLE_LOWER_BOUND) / 2;
+    const innerTableWidth = HALF_TABLE_WIDTH - BALL_RADIUS * 2;
 
-  getWorldCoord(physicsCoord: Vector) {
-    const factor = this.height / HALF_TABLE_WIDTH;
+    const xNorm = (physicsPosition.x * normHeight) / (innerTableWidth * ratio);
+    const yNorm = (-physicsPosition.y * normHeight) / innerTableWidth - yOffset;
     return new Vector(
-      (physicsCoord.x + HALF_TABLE_WIDTH) * factor,
-      (physicsCoord.y + HALF_TABLE_HEIGHT) * factor,
+      (xNorm * Renderer.width) / 2 + Renderer.width / 2,
+      (yNorm * Renderer.height) / 2 + Renderer.height / 2,
       0
     );
   }
 
-  getPhysicsCoord(worldCoord: Vector) {
-    const factor = HALF_TABLE_WIDTH / this.height;
-    return new Vector(
-      worldCoord.x * factor - HALF_TABLE_WIDTH,
-      worldCoord.y * factor - HALF_TABLE_HEIGHT,
-      0
-    );
+  private static scaleNumber(num: number) {
+    const normHeight = GAME_TABLE_UPPER_BOUND - GAME_TABLE_LOWER_BOUND;
+    const innerTableWidth = HALF_TABLE_WIDTH - BALL_RADIUS * 2;
+    const norm = (num * normHeight) / innerTableWidth;
+    return (norm * Renderer.height) / 2;
   }
 
-  private setStyle(width = 1) {
-    if (width < 0.5) {
-      width = 0.5;
+  private static stroke(width = 1) {
+    if (width < MIN_LINE_WIDTH) {
+      width = MIN_LINE_WIDTH;
     }
 
-    this.ctx.strokeStyle = "deeppink";
-    this.ctx.fillStyle = "deeppink";
-    this.ctx.lineWidth = width;
+    Renderer.ctx.strokeStyle = 'deeppink';
+    Renderer.ctx.lineWidth = width;
+
+    Renderer.ctx.stroke();
   }
 }

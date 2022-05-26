@@ -1,0 +1,8 @@
+{
+  "name": "8bp-trainer",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx parcel build src/trainer.ts"
+  },
+  "author": "Daniel Landgraf"
+}

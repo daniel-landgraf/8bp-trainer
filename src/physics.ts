@@ -1,8 +1,6 @@
-import { Ball } from "./ball";
-import { BALL_RADIUS } from "./constants";
-import { Vector } from "./vector";
-
-export const ALMOST_ZERO = 1e-11;
+import { Ball } from './ball';
+import { ALMOST_ZERO, BALL_RADIUS } from './constants';
+import { Vector } from './vector';
 
 const COEFFICIENT_OF_RESTITUTION = 0.804;
 const COEFFICIENT_OF_ROLLING_FRICTION = 0.0111;

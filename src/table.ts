@@ -1,14 +1,13 @@
-import { Ball, State } from "./ball";
+import { Ball, State } from './ball';
 import {
   Collision,
   BallWithCornerCollision,
   BallWithBallCollision,
   BallWithCushionCollision,
-} from "./collision";
+} from './collision';
 import {
-  BALL_IN_POCKET_SPEED,
+  ALMOST_ZERO,
   BALL_RADIUS,
-  BALL_TOWARDS_POCKET_SPEED,
   CUE_PROPERTIES_MAX_POWER,
   CUE_PROPERTIES_SPIN,
   CUSHION_POINTS,
@@ -16,11 +15,15 @@ import {
   HALF_TABLE_WIDTH,
   POCKET_DISTANCE,
   POCKET_POINTS,
-} from "./constants";
-import { ALMOST_ZERO, Physics } from "./physics";
-import { Renderer } from "./renderer";
+} from './constants';
+import { Physics } from './physics';
+import { Renderer } from './renderer';
 
 const FRAME_TIME = 0.005;
+
+const BALL_TOWARDS_POCKET_SPEED = 120;
+const BALL_IN_POCKET_SPEED = 1.5;
+
 const MAX_LINE_WIDTH = 5;
 
 export class Table {
@@ -29,7 +32,6 @@ export class Table {
   }
 
   constructor(
-    private renderer: Renderer,
     private balls: Ball[],
     cueBall: Ball,
     power: number,
@@ -83,9 +85,9 @@ export class Table {
           const prevPosition = ball.position.copy();
           ball.move(processedTime);
 
-          this.renderer.drawLine(
-            this.renderer.getWorldCoord(prevPosition),
-            this.renderer.getWorldCoord(ball.position),
+          Renderer.drawLine(
+            prevPosition,
+            ball.position,
             (ball.velocity.length / CUE_PROPERTIES_MAX_POWER) * MAX_LINE_WIDTH
           );
         }
@@ -237,14 +239,6 @@ export class Table {
     return result;
   }
 
-  private finishFrame(time: number) {
-    for (const ball of this.balls) {
-      if (ball.canInteract) {
-        Physics.finish(ball, time);
-      }
-    }
-  }
-
   private handleCollision(collision: Collision) {
     collision.time = Date.now();
 
@@ -257,6 +251,14 @@ export class Table {
       const dy = collision.point.y - collision.ball.position.y;
       const theta = -Physics.calculateTheta(dy, -dx);
       Physics.handleBallWithCushionCollision(collision.ball, theta);
+    }
+  }
+
+  private finishFrame(time: number) {
+    for (const ball of this.balls) {
+      if (ball.canInteract) {
+        Physics.finish(ball, time);
+      }
     }
   }
 }
