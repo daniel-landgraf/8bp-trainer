@@ -43,7 +43,7 @@ export class Renderer {
   static drawCircle(center: Vector, radius: number) {
     Renderer.ctx.beginPath();
 
-    const worldPos = Renderer.getBallPosition(center);
+    const worldPos = Renderer.convertBallPosition(center);
     const worldRadius = Renderer.scaleNumber(radius);
     Renderer.ctx.arc(worldPos.x, worldPos.y, worldRadius, 0, Math.PI * 2);
 
@@ -53,15 +53,15 @@ export class Renderer {
   static drawLine(from: Vector, to: Vector, width = 1) {
     Renderer.ctx.beginPath();
 
-    const fromWorldPos = Renderer.getBallPosition(from);
-    const toWorldPos = Renderer.getBallPosition(to);
+    const fromWorldPos = Renderer.convertBallPosition(from);
+    const toWorldPos = Renderer.convertBallPosition(to);
     Renderer.ctx.moveTo(fromWorldPos.x, fromWorldPos.y);
     Renderer.ctx.lineTo(toWorldPos.x, toWorldPos.y);
 
     Renderer.stroke(width);
   }
 
-  private static getBallPosition(physicsPosition: Vector) {
+  static convertBallPosition(physicsPosition: Vector) {
     const normHeight = GAME_TABLE_UPPER_BOUND - GAME_TABLE_LOWER_BOUND;
     const ratio = Renderer.width / Renderer.height;
     const yOffset = (GAME_TABLE_UPPER_BOUND + GAME_TABLE_LOWER_BOUND) / 2;

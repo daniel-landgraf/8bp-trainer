@@ -8,8 +8,6 @@ import {
 import {
   ALMOST_ZERO,
   BALL_RADIUS,
-  CUE_PROPERTIES_MAX_POWER,
-  CUE_PROPERTIES_SPIN,
   CUSHION_POINTS,
   HALF_TABLE_HEIGHT,
   HALF_TABLE_WIDTH,
@@ -18,6 +16,9 @@ import {
 } from './constants';
 import { Physics } from './physics';
 import { Renderer } from './renderer';
+
+const CUE_PROPERTIES_MAX_POWER = 520.6;
+const CUE_PROPERTIES_SPIN = 0.37931034482758624;
 
 const FRAME_TIME = 0.005;
 

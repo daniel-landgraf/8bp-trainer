@@ -13,15 +13,28 @@ const BALL_WEBGL_MATRIX_UNIFORM_NAME = 'CC_MVPMatrix';
 const MAX_LOG_COUNT = 1000;
 
 export class Hooker {
-  static shaderProgram: WebGLProgram;
-
   static balls: Ball[] = [];
+  static mousePosition = new Vector(0, 0, 0);
+  static mouseButtonDown = false;
 
   private static gameCanvas: HTMLCanvasElement;
   private static ctx: WebGLRenderingContext;
+  private static shaderProgram: WebGLProgram;
   private static logCount = 0;
 
   static init(window: Window, gameCanvas: HTMLCanvasElement) {
+    gameCanvas.addEventListener('mousemove', (ev) => {
+      Hooker.mousePosition = new Vector(ev.offsetX, ev.offsetY, 0);
+    });
+
+    gameCanvas.addEventListener('mousedown', (ev) => {
+      Hooker.mouseButtonDown = true;
+    });
+
+    gameCanvas.addEventListener('mouseup', (ev) => {
+      Hooker.mouseButtonDown = false;
+    });
+
     Hooker.gameCanvas = gameCanvas;
     Hooker.ctx = gameCanvas.getContext('webgl');
 
@@ -43,16 +56,13 @@ export class Hooker {
     };
 
     webglPrototype.drawElements = function (mode, count, type, offset) {
-      // safeLog(count);
       if (count === BALL_WEBGL_ELEMENT_COUNT) {
         const location = Hooker.ctx.getUniformLocation(
           Hooker.shaderProgram,
           BALL_WEBGL_MATRIX_UNIFORM_NAME
         );
         const uniform = Hooker.ctx.getUniform(Hooker.shaderProgram, location);
-        // safeLog(uniform[12], uniform[13], uniform[14]);
-
-        const position = Hooker.getBallPosition(uniform[12], uniform[13]);
+        const position = Hooker.convertBallPosition(uniform[12], uniform[13]);
         if (position.x < HALF_TABLE_WIDTH) {
           Hooker.balls.push(new Ball(position));
         }
@@ -62,7 +72,7 @@ export class Hooker {
     };
   }
 
-  private static getBallPosition(xNorm: number, yNorm: number) {
+  static convertBallPosition(xNorm: number, yNorm: number) {
     const normHeight = GAME_TABLE_UPPER_BOUND - GAME_TABLE_LOWER_BOUND;
     const ratio = Hooker.gameCanvas.width / Hooker.gameCanvas.height;
     const yOffset = (GAME_TABLE_UPPER_BOUND + GAME_TABLE_LOWER_BOUND) / 2;

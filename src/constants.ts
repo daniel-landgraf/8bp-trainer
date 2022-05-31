@@ -1,15 +1,12 @@
 import { Vector } from './vector';
 
-export const ALMOST_ZERO = 1e-11;
-
 export const GAME_TABLE_UPPER_BOUND = 0.33250200748443604;
 export const GAME_TABLE_LOWER_BOUND = -0.7065067887306213;
 
+export const ALMOST_ZERO = 1e-11;
+
 export const HALF_TABLE_WIDTH = 127;
 export const HALF_TABLE_HEIGHT = 63.5;
-
-export const CUE_PROPERTIES_MAX_POWER = 520.6;
-export const CUE_PROPERTIES_SPIN = 0.37931034482758624;
 
 export const BALL_RADIUS = 3.800475;
 
